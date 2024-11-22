@@ -33,18 +33,18 @@ impl fmt::Display for Decimal {
 #[cfg(test)]
 mod tests {
     use num_bigint::ToBigInt;
-    use yaserde_derive::{YaDeserialize, YaSerialize};
+    use serde::{Deserialize, Serialize};
 
     use super::*;
     use crate::utils::xml_eq::assert_xml_eq;
 
-    #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-    #[yaserde(prefix = "t", namespace = "t: test")]
+    #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+    #[serde(prefix = "t", namespace = "t: test")]
     pub struct DecimalPair {
-        #[yaserde(prefix = "t", rename = "First")]
+        #[serde(prefix = "t", rename = "First")]
         pub first: Decimal,
 
-        #[yaserde(prefix = "t", rename = "Second")]
+        #[serde(prefix = "t", rename = "Second")]
         pub second: Decimal,
     }
 
@@ -60,7 +60,7 @@ mod tests {
             first: Decimal::from_bigdecimal(BigDecimal::new(1234.to_bigint().unwrap(), 5)),
             second: Decimal::from_bigdecimal(BigDecimal::new((-1234).to_bigint().unwrap(), 2)),
         };
-        let actual = yaserde::ser::to_string(&i).unwrap();
+        let actual = serde::ser::to_string(&i).unwrap();
         assert_xml_eq(&actual, expected);
     }
 
@@ -73,7 +73,7 @@ mod tests {
                 <t:Second>-12.34</t:Second>
             </t:DecimalPair>
             "#;
-        let i: DecimalPair = yaserde::de::from_str(s).unwrap();
+        let i: DecimalPair = serde::de::from_str(s).unwrap();
         assert_eq!(i.first.to_bigdecimal(), BigDecimal::new(1234.to_bigint().unwrap(), 5));
         assert_eq!(i.second.to_bigdecimal(), BigDecimal::new((-1234).to_bigint().unwrap(), 2));
     }

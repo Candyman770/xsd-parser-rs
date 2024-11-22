@@ -11,7 +11,7 @@ pub fn tuple_serde(input: TokenStream) -> TokenStream {
     tuple::serde(&ast).unwrap_or_else(|err| err.to_compile_error()).into()
 }
 
-// Adds YaSerialize and YaDeserialize implementations for types that support FromStr and Display traits.
+// Adds Serialize and Deserialize implementations for types that support FromStr and Display traits.
 #[proc_macro_derive(UtilsDefaultSerde)]
 pub fn default_serde(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
@@ -20,12 +20,12 @@ pub fn default_serde(input: TokenStream) -> TokenStream {
     let struct_name_literal = &ast.ident.to_string();
 
     let serde = quote! {
-        impl ::yaserde::YaSerialize for #struct_name {
+        impl ::serde::Serialize for #struct_name {
             fn serialize<W: ::std::io::Write>(
                 &self,
-                writer: &mut ::yaserde::ser::Serializer<W>,
+                writer: &mut ::serde::ser::Serializer<W>,
             ) -> ::std::result::Result<(), ::std::string::String> {
-                ::xsd_types::utils::yaserde::serialize(
+                ::xsd_types::utils::serde::serialize(
                     self,
                     #struct_name_literal,
                     writer, |s| s.to_string(),
@@ -47,11 +47,11 @@ pub fn default_serde(input: TokenStream) -> TokenStream {
             }
         }
 
-        impl ::yaserde::YaDeserialize for #struct_name {
+        impl ::serde::Deserialize for #struct_name {
             fn deserialize<R: ::std::io::Read>(
-                reader: &mut ::yaserde::de::Deserializer<R>,
+                reader: &mut ::serde::de::Deserializer<R>,
             ) -> ::std::result::Result<Self, ::std::string::String> {
-                ::xsd_types::utils::yaserde::deserialize(
+                ::xsd_types::utils::serde::deserialize(
                     reader,
                     |s| #struct_name::from_str(s).map_err(|e| e.to_string()),
                 )

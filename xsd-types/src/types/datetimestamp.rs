@@ -41,7 +41,7 @@ impl fmt::Display for DateTimeStamp {
 #[cfg(test)]
 mod tests {
     use chrono::NaiveDate;
-    use yaserde_derive::{YaDeserialize, YaSerialize};
+    use serde::{Deserialize, Serialize};
 
     use super::*;
     use crate::utils::xml_eq::assert_xml_eq;
@@ -114,13 +114,13 @@ mod tests {
         );
     }
 
-    #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-    #[yaserde(prefix = "t", namespace = "t: test")]
+    #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+    #[serde(prefix = "t", namespace = "t: test")]
     pub struct Message {
-        #[yaserde(prefix = "t", rename = "CreatedAt")]
+        #[serde(prefix = "t", rename = "CreatedAt")]
         pub created_at: DateTimeStamp,
 
-        #[yaserde(prefix = "t", rename = "Text")]
+        #[serde(prefix = "t", rename = "Text")]
         pub text: String,
     }
 
@@ -141,7 +141,7 @@ mod tests {
             created_at: DateTimeStamp::from_chrono_datetime(dt),
             text: "Hello world".to_string(),
         };
-        let actual = yaserde::ser::to_string(&m).unwrap();
+        let actual = serde::ser::to_string(&m).unwrap();
         assert_xml_eq(&actual, expected);
     }
 
@@ -153,7 +153,7 @@ mod tests {
                 <t:Text>Hello world</t:Text>
             </t:Message>
             "#;
-        let m: Message = yaserde::de::from_str(s).unwrap();
+        let m: Message = serde::de::from_str(s).unwrap();
 
         let offset = FixedOffset::west_opt(6 * 3600 + 30 * 60).unwrap();
         let dt_utc =

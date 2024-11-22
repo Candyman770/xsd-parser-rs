@@ -59,15 +59,15 @@ A following mapping used to represent built-in XSD types as rust types:
 Notes:
 
 (1) we are using our own big integer types, that wrap `num_bigint::BigInt` and `num_bigint::BigUint`
-and provide XML (de)serialization with `yaserde`. You can find `Integer`, `NonNegativeInteger`,
+and provide XML (de)serialization with `serde`. You can find `Integer`, `NonNegativeInteger`,
 `PositiveInteger`, `NonPositiveInteger` and `NegativeInteger` in the corresponding files within
 `xsd-types/src/types/`
 
 (2) we are using our own type `Decimal`, which wraps `bigdecimal::BigDecimal` and provides 
-XML (de)serialization with `yaserde`. You can find `Decimal` in `xsd-types/src/types/decimal.rs`
+XML (de)serialization with `serde`. You can find `Decimal` in `xsd-types/src/types/decimal.rs`
 
 (3) we are using our own time types, that wrap types from `chrono` crate and provide
-XML (de)serialization with `yaserde`. You can find `Date`, `Time`, `DateTime` and `DateTimeStamp`
+XML (de)serialization with `serde`. You can find `Date`, `Time`, `DateTime` and `DateTimeStamp`
 in the corresponding files within `xsd-types/src/types/`. Since `chrono` has it flaws and does not
 follow ISO 8601 strictly, we use self-implemented parsing and might replace `chrono` in the future.
 Feel free to suggest an appropriate crate for time handling.
@@ -76,7 +76,7 @@ Feel free to suggest an appropriate crate for time handling.
 in rust that supports proper month/years holding and literal representation. You can find
 `Duration` in `xsd-types/src/types/duration.rs`
 
-(5) we are using our own gregorian calendar types, that provide XML (de)serialization with `yaserde`
+(5) we are using our own gregorian calendar types, that provide XML (de)serialization with `serde`
 following ISO 8601 strictly. You can find `gDay`, `gMonth`, `gMonthDay`, `gYear` and `gYearMonth`
 in the corresponding files within `xsd-types/src/types/`.
 
@@ -97,10 +97,10 @@ There are cases when schema allows extensions for the certain type.
 In such cases we don't know in advance what fields must be present in Rust struct so we don't add them to output:
 
 ```rust
-#[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespace = "tns: http://example.com")]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(prefix = "tns", namespace = "tns: http://example.com")]
 pub struct MyType {
-    #[yaserde(prefix = "tns", rename = "Parameters")]
+    #[serde(prefix = "tns", rename = "Parameters")]
     pub parameters: String,
 }
 ```

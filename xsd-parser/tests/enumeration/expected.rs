@@ -1,11 +1,11 @@
-#[derive(PartialEq, Debug, Clone, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespace = "tns: http://example.com")]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(prefix = "tns", namespace = "tns: http://example.com")]
 pub enum FooType {
-    #[yaserde(rename = "OFF")]
+    #[serde(rename = "OFF")]
     Off,
-    #[yaserde(rename = "ON")]
+    #[serde(rename = "ON")]
     On,
-    #[yaserde(rename = "AUTO")]
+    #[serde(rename = "AUTO")]
     Auto,
     __Unknown__(String),
 }

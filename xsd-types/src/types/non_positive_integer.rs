@@ -40,7 +40,7 @@ impl fmt::Display for NonPositiveInteger {
 
 #[cfg(test)]
 mod tests {
-    use yaserde_derive::{YaDeserialize, YaSerialize};
+    use serde::{Deserialize, Serialize};
 
     use super::*;
     use crate::utils::xml_eq::assert_xml_eq;
@@ -90,13 +90,13 @@ mod tests {
         assert_eq!(NonPositiveInteger((-1).to_bigint().unwrap()).to_string(), "-1");
     }
 
-    #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-    #[yaserde(prefix = "t", namespace = "t: test")]
+    #[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+    #[serde(prefix = "t", namespace = "t: test")]
     pub struct NonPositiveIntegerPair {
-        #[yaserde(prefix = "t", rename = "First")]
+        #[serde(prefix = "t", rename = "First")]
         pub first: NonPositiveInteger,
 
-        #[yaserde(prefix = "t", rename = "Second")]
+        #[serde(prefix = "t", rename = "Second")]
         pub second: NonPositiveInteger,
     }
 
@@ -112,7 +112,7 @@ mod tests {
             first: NonPositiveInteger::from_bigint(0.to_bigint().unwrap()),
             second: NonPositiveInteger::from_bigint((-1234).to_bigint().unwrap()),
         };
-        let actual = yaserde::ser::to_string(&i).unwrap();
+        let actual = serde::ser::to_string(&i).unwrap();
         assert_xml_eq(&actual, expected);
     }
 
@@ -124,7 +124,7 @@ mod tests {
                 <t:Second>-1234</t:Second>
             </t:NonPositiveIntegerPair>
             "#;
-        let i: NonPositiveIntegerPair = yaserde::de::from_str(s).unwrap();
+        let i: NonPositiveIntegerPair = serde::de::from_str(s).unwrap();
         assert_eq!(i.first.to_bigint().unwrap(), 0.to_bigint().unwrap());
         assert_eq!(i.second.to_bigint().unwrap(), (-1234).to_bigint().unwrap());
     }

@@ -12,13 +12,13 @@ fn deserialization_works() {
 
     let ser = include_str!("example.xml");
 
-    let de: expected::FooType = yaserde::de::from_str(ser).unwrap();
+    let de: expected::FooType = serde::de::from_str(ser).unwrap();
 
     assert_eq!(de, expected::FooType(vec![1, 2, 3]));
 
     assert_eq!(
         r#"<?xml version="1.0" encoding="utf-8"?><FooType>1 2 3</FooType>"#,
-        yaserde::ser::to_string(&de).unwrap()
+        serde::ser::to_string(&de).unwrap()
     );
 }
 

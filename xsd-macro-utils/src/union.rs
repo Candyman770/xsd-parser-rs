@@ -61,12 +61,12 @@ pub fn serde(ast: &syn::DeriveInput) -> syn::Result<TokenStream> {
         .collect::<TokenStream>();
 
     Ok(quote! {
-        impl ::yaserde::YaSerialize for #struct_name {
+        impl ::serde::Serialize for #struct_name {
             fn serialize<W: ::std::io::Write>(
                 &self,
-                writer: &mut ::yaserde::ser::Serializer<W>,
+                writer: &mut ::serde::ser::Serializer<W>,
             ) -> ::std::result::Result<(), ::std::string::String> {
-                ::xsd_types::utils::yaserde::serialize(self, #struct_name_literal, writer, |s| {
+                ::xsd_types::utils::serde::serialize(self, #struct_name_literal, writer, |s| {
                     match s {
                         #ser_variants
                         #struct_name::__Unknown__(_) => "".to_string()
@@ -89,11 +89,11 @@ pub fn serde(ast: &syn::DeriveInput) -> syn::Result<TokenStream> {
             }
         }
 
-        impl ::yaserde::YaDeserialize for #struct_name {
+        impl ::serde::Deserialize for #struct_name {
             fn deserialize<R: ::std::io::Read>(
-                reader: &mut ::yaserde::de::Deserializer<R>,
+                reader: &mut ::serde::de::Deserializer<R>,
             ) -> ::std::result::Result<Self, ::std::string::String> {
-                ::xsd_types::utils::yaserde::deserialize(reader, |s| {
+                ::xsd_types::utils::serde::deserialize(reader, |s| {
                     #de_variants
                     Ok(#struct_name::__Unknown__(s.to_string()))
                 })

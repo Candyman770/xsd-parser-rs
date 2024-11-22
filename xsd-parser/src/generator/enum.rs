@@ -65,23 +65,23 @@ pub trait EnumGenerator {
             return "#[derive(PartialEq, Debug, UtilsUnionSerDe)]".into();
         }
 
-        let derives = "#[derive(PartialEq, Debug, Clone, YaSerialize, YaDeserialize)]";
+        let derives = "#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]";
         let tns = gen.target_ns.borrow();
         match tns.as_ref() {
             Some(tn) => match tn.name() {
                 Some(name) => format!(
-                    "{derives}#[yaserde(prefix = \"{prefix}\", namespace = \"{prefix}: {uri}\")]\n",
+                    "{derives}#[serde(prefix = \"{prefix}\", namespace = \"{prefix}: {uri}\")]\n",
                     derives = derives,
                     prefix = name,
                     uri = tn.uri()
                 ),
                 None => format!(
-                    "{derives}#[yaserde(namespace = \"{uri}\")]\n",
+                    "{derives}#[serde(namespace = \"{uri}\")]\n",
                     derives = derives,
                     uri = tn.uri()
                 ),
             },
-            None => format!("{derives}#[yaserde()]\n", derives = derives),
+            None => format!("{derives}#[serde()]\n", derives = derives),
         }
         .into()
     }

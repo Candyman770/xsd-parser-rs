@@ -1,10 +1,10 @@
-#[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespace = "tns: http://example.com")]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(prefix = "tns", namespace = "tns: http://example.com")]
 pub struct FooType {
-    #[yaserde(prefix = "tns", rename = "Min")]
+    #[serde(prefix = "tns", rename = "Min")]
     pub min: i32,
 
-    #[yaserde(prefix = "tns", rename = "Max")]
+    #[serde(prefix = "tns", rename = "Max")]
     pub max: i32,
 }
 

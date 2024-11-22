@@ -1,16 +1,16 @@
-#[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(
     prefix = "tns",
     namespace = "tns: http://example.com",
     namespace = "tns2: http://other.example.com"
 )]
 pub struct FooType {
-    #[yaserde(prefix = "tns", rename = "a")]
+    #[serde(prefix = "tns", rename = "a")]
     pub a: f64,
 
-    #[yaserde(prefix = "tns2", rename = "b")]
+    #[serde(prefix = "tns2", rename = "b")]
     pub b: i32,
 
-    #[yaserde(prefix = "tns2", rename = "c")]
+    #[serde(prefix = "tns2", rename = "c")]
     pub c: String,
 }

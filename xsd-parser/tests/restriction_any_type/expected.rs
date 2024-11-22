@@ -1,14 +1,14 @@
 // pub type AppSequence = AppSequenceType;
-#[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespace = "tns: http://schemas.xmlsoap.org/ws/2005/04/discovery")]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(prefix = "tns", namespace = "tns: http://schemas.xmlsoap.org/ws/2005/04/discovery")]
 pub struct AppSequenceType {
-    #[yaserde(attribute, rename = "InstanceId")]
+    #[serde(attribute, rename = "InstanceId")]
     pub instance_id: u32,
 
-    #[yaserde(attribute, rename = "SequenceId")]
+    #[serde(attribute, rename = "SequenceId")]
     pub sequence_id: Option<String>,
 
-    #[yaserde(attribute, rename = "MessageNumber")]
+    #[serde(attribute, rename = "MessageNumber")]
     pub message_number: u32,
 }
 

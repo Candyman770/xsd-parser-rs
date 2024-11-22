@@ -1,21 +1,21 @@
 
-#[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tds", namespace = "tds: http://www.onvif.org/ver10/device/wsdl")]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(prefix = "tds", namespace = "tds: http://www.onvif.org/ver10/device/wsdl")]
 pub struct GetServices {
     // Indicates if the service capabilities (untyped) should be included in the
     // response.
-    #[yaserde(prefix = "tds", rename = "IncludeCapability")]
+    #[serde(prefix = "tds", rename = "IncludeCapability")]
     pub include_capability: bool,
 }
 
 impl Validate for GetServices {}
 
 
-#[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tds", namespace = "tds: http://www.onvif.org/ver10/device/wsdl")]
+#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(prefix = "tds", namespace = "tds: http://www.onvif.org/ver10/device/wsdl")]
 pub struct GetServicesResponse {
     // Each Service element contains information about one service.
-    #[yaserde(prefix = "tds", rename = "Service")]
+    #[serde(prefix = "tds", rename = "Service")]
     pub service: Vec<Service>,
 }
 

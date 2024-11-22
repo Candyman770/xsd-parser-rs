@@ -4,14 +4,14 @@ use super::utils;
 fn deserialization_works() {
     mod expected {
         use xsd_parser::generator::validator::Validate;
-        use yaserde_derive::{YaDeserialize, YaSerialize};
+        use serde::{Deserialize, Serialize};
 
         include!("expected.rs");
     }
 
     let ser = include_str!("example.xml");
 
-    let de: expected::FooType = yaserde::de::from_str(ser).unwrap();
+    let de: expected::FooType = serde::de::from_str(ser).unwrap();
 
     assert_eq!(de, expected::FooType { min: 1, max: 2 });
 }

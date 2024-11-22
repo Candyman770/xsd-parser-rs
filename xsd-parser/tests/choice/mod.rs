@@ -6,14 +6,14 @@ fn deserialization_works() {
         use std::str::FromStr;
 
         use xsd_macro_utils::*;
-        use yaserde_derive::{YaDeserialize, YaSerialize};
+        use serde::{Deserialize, Serialize};
 
         include!("expected.rs");
     }
 
     let ser = include_str!("example.xml");
 
-    let de: expected::FooType = yaserde::de::from_str(ser).unwrap();
+    let de: expected::FooType = serde::de::from_str(ser).unwrap();
 
     assert_eq!(
         de,
