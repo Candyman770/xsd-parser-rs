@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-
+use roxmltree::Namespace;
 use crate::{
     generator::{validator::gen_validate_impl, Generator},
     parser::types::Struct,
@@ -80,8 +80,9 @@ pub trait StructGenerator {
 
     fn macros(&self, _entity: &Struct, gen: &Generator) -> Cow<'static, str> {
         let derives = "#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]\n";
-        let tns = gen.target_ns.borrow();
-        match tns.as_ref() {
+        let _tns = gen.target_ns.borrow();
+        let tns_ref: Option<Namespace> = None;
+        match tns_ref {
             Some(tn) => match tn.name() {
                 Some(name) => format!(
                     "{derives}#[serde(prefix = \"{prefix}\", namespace = \"{prefix}: {uri}\")]\n",
@@ -95,7 +96,7 @@ pub trait StructGenerator {
                     uri = tn.uri()
                 ),
             },
-            None => format!("{derives}#[serde()]\n", derives = derives),
+            None => format!("{derives}\n", derives = derives),
         }
         .into()
     }

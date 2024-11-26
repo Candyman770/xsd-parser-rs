@@ -147,10 +147,10 @@ pub fn element_modifier(node: &Node) -> TypeModifier {
             MaxOccurs::None => TypeModifier::Option,
             MaxOccurs::Unbounded => TypeModifier::Array,
             MaxOccurs::Bounded(val) => {
-                if val > 1 {
-                    TypeModifier::Array
-                } else {
-                    TypeModifier::None
+                match val {
+                    0 => TypeModifier::None,
+                    1 => TypeModifier::Option,
+                    _ => TypeModifier::Array
                 }
             }
         },

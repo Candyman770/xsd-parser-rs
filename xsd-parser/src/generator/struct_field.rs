@@ -49,6 +49,7 @@ pub trait StructFieldGenerator {
                 entity.name.as_str(),
                 gen.target_ns.borrow().as_ref(),
                 indent.as_str(),
+                &entity.type_modifiers,
             ),
             _ => "".into(),
         }

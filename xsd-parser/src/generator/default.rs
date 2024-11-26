@@ -67,13 +67,13 @@ pub fn default_modify_type(type_name: &str, modifiers: &[TypeModifier]) -> Cow<'
 pub fn serde_for_attribute(name: &str, indent: &str) -> String {
     if let Some(index) = name.find(':') {
         format!(
-            "{}#[serde(attribute, prefix = \"{}\", rename = \"{}\")]\n",
+            "{}#[serde(attribute, prefix = \"{}\", rename = \"@{}\")]\n",
             indent,
             &name[0..index],
             &name[index + 1..]
         )
     } else {
-        format!("{}#[serde(attribute, rename = \"{}\")]\n", indent, name)
+        format!("{}#[serde(attribute, rename = \"@{}\")]\n", indent, name)
     }
 }
 
@@ -81,6 +81,7 @@ pub fn serde_for_element(
     name: &str,
     target_namespace: Option<&Namespace>,
     indent: &str,
+    type_modifiers: &Vec<TypeModifier>
 ) -> String {
     let (prefix, field_name) = if let Some(index) = name.find(':') {
         (Some(&name[0..index]), &name[index + 1..])
@@ -88,16 +89,28 @@ pub fn serde_for_element(
         (target_namespace.and_then(|ns| ns.name()), name)
     };
 
+    let default_for_vec = if type_modifiers.contains(&TypeModifier::Array) {
+        ", default"
+    } else {
+        ""
+    };
+
+    let skip_seriralize_for_option = if type_modifiers.contains(&TypeModifier::Option) {
+        ", skip_serializing_if = \"Option::is_none\""
+    } else {
+        ""
+    };
+
     match prefix {
         Some(p) => {
-            format!("{}#[serde(prefix = \"{}\", rename = \"{}\")]\n", indent, p, field_name)
+            format!("{}#[serde(prefix = \"{}\", rename = \"{}\"{}{})]\n", indent, p, field_name, default_for_vec, skip_seriralize_for_option)
         }
-        None => format!("{}#[serde(rename = \"{}\")]\n", indent, field_name),
+        None => format!("{}#[serde(rename = \"{}\"{}{})]\n", indent, field_name, default_for_vec, skip_seriralize_for_option),
     }
 }
 
 pub fn serde_for_flatten_element(indent: &str) -> String {
-    format!("{}#[serde(flatten)]\n", indent)
+    format!("{}#[serde(rename = \"$value\")]\n", indent)
 }
 
 #[cfg(test)]
