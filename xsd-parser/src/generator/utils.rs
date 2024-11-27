@@ -46,7 +46,7 @@ pub fn match_built_in_type(type_name: &str, xsd_ns: &Option<Namespace>) -> Optio
         "unsignedShort" => "u16",
         "unsignedByte" => "u8",
 
-        "decimal" => "f64",
+        "decimal" => "BigDecimal",
 
         "double" => "f64",
         "float" => "f64",
