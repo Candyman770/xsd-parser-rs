@@ -32,7 +32,7 @@ pub trait EnumGenerator {
             field_name = gen.base().format_name(&name),
             name = name,
             indent = gen.base().indent(),
-            macros = self.macros(entity, gen),
+            macros = self.macros(entity, gen, true),
         );
         format!(
             "{comment}{macros}\n\
@@ -41,18 +41,17 @@ pub trait EnumGenerator {
                 {indent}__Unknown__({typename}),\n\
             }}\n\n\
             {default}\n\n\
-            {validation}\n\n\
             {subtypes}\n\n\
             {wrapper_struct}",
             indent = gen.base().indent(),
             comment = self.format_comment(entity, gen),
-            macros = self.macros(entity, gen),
+            macros = self.macros(entity, gen, false),
             name = name,
             cases = self.cases(entity, gen),
             typename = self.get_type_name(entity, gen),
             default = default_case,
             subtypes = self.subtypes(entity, gen),
-            validation = self.validation(entity, gen),
+            // validation = self.validation(entity, gen),
             wrapper_struct = if entity.source == EnumSource::Restriction { &wrapper_struct } else { "" }
         )
     }
@@ -78,12 +77,12 @@ pub trait EnumGenerator {
         gen.base().format_type_name(entity.name.as_str(), gen).into()
     }
 
-    fn macros(&self, entity: &Enum, gen: &Generator) -> Cow<'static, str> {
+    fn macros(&self, entity: &Enum, gen: &Generator, with_default: bool) -> Cow<'static, str> {
         if entity.source == EnumSource::Union {
             return "#[derive(PartialEq, Debug, UtilsUnionSerDe)]".into();
         }
 
-        let derives = "#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]";
+        let derives = if with_default { "#[derive(Default, PartialEq, Debug, Clone, Serialize, Deserialize)]" } else { "#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]" };
         let _tns = gen.target_ns.borrow();
         let tns_ref: Option<Namespace> = None;
         match tns_ref {

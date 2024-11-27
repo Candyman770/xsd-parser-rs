@@ -46,14 +46,14 @@ pub fn match_built_in_type(type_name: &str, xsd_ns: &Option<Namespace>) -> Optio
         "unsignedShort" => "u16",
         "unsignedByte" => "u8",
 
-        "decimal" => "xs::Decimal",
+        "decimal" => "f64",
 
         "double" => "f64",
         "float" => "f64",
 
-        "date" => "xs::Date",
-        "time" => "xs::Time",
-        "dateTime" => "xs::DateTime",
+        "date" => "NaiveDate",
+        "time" => "NaiveTime",
+        "dateTime" => "DateTime<Utc>",
         "dateTimeStamp" => "xs::DateTimeStamp",
 
         "duration" => "xs::Duration",
@@ -61,7 +61,7 @@ pub fn match_built_in_type(type_name: &str, xsd_ns: &Option<Namespace>) -> Optio
         "gDay" => "xs::GDay",
         "gMonth" => "xs::GMonth",
         "gMonthDay" => "xs::GMonthDay",
-        "gYear" => "xs::GYear",
+        "gYear" => "u32",
         "gYearMonth" => "xs::GYearMonth",
 
         "string" => "String",

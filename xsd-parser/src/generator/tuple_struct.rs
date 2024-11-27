@@ -11,13 +11,13 @@ use crate::{
 pub trait TupleStructGenerator {
     fn generate(&self, entity: &TupleStruct, gen: &Generator) -> String {
         format!(
-            "{comment}{macros}pub struct {name} (pub {typename});\n{subtypes}\n{validation}\n",
+            "{comment}{macros}pub struct {name} (pub {typename});\n{subtypes}\n",
             comment = self.format_comment(entity, gen),
             name = self.get_name(entity, gen),
             macros = self.macros(entity, gen),
             typename = self.get_type_name(entity, gen),
             subtypes = self.subtypes(entity, gen),
-            validation = self.validation(entity, gen),
+            // validation = self.validation(entity, gen),
         )
     }
 
