@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use roxmltree::Namespace;
 
 use crate::{
-    generator::{validator::gen_validate_impl, Generator},
+    generator::{validator::{gen_validate_impl, gen_enum_validation}, Generator},
     parser::types::{Enum, EnumSource},
 };
 
@@ -23,9 +23,10 @@ pub trait EnumGenerator {
             indent = gen.base().indent()
         );
         let wrapper_struct = format!(
-            "{macros}\n\
+            "{macros}\
             pub struct {wrapper_name} {{\n\
                 {indent}#[serde(rename = \"$text\")]\n\
+                {indent}#[validate(nested)]\n\
                 {indent}pub {field_name}: {name}\n\
             }}\n\n",
             wrapper_name = wrapper_name,
@@ -35,11 +36,12 @@ pub trait EnumGenerator {
             macros = self.macros(entity, gen, true),
         );
         format!(
-            "{comment}{macros}\n\
+            "{comment}{macros}\
             pub enum {name} {{\n\
                 {cases}\n\
                 {indent}__Unknown__({typename}),\n\
             }}\n\n\
+            {validation}\n\n\
             {default}\n\n\
             {subtypes}\n\n\
             {wrapper_struct}",
@@ -52,7 +54,8 @@ pub trait EnumGenerator {
             default = default_case,
             subtypes = self.subtypes(entity, gen),
             // validation = self.validation(entity, gen),
-            wrapper_struct = if entity.source == EnumSource::Restriction { &wrapper_struct } else { "" }
+            wrapper_struct = if entity.source == EnumSource::Restriction { &wrapper_struct } else { "" },
+            validation = gen_enum_validation(&entity, &name, &gen),
         )
     }
 
@@ -82,7 +85,7 @@ pub trait EnumGenerator {
             return "#[derive(PartialEq, Debug, UtilsUnionSerDe)]".into();
         }
 
-        let derives = if with_default { "#[derive(Default, PartialEq, Debug, Clone, Serialize, Deserialize)]" } else { "#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]" };
+        let derives = if with_default { "#[derive(Default, PartialEq, Debug, Clone, Serialize, Deserialize, Validate)]" } else { "#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]" };
         let _tns = gen.target_ns.borrow();
         let tns_ref: Option<Namespace> = None;
         match tns_ref {

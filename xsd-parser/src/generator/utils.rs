@@ -20,10 +20,10 @@ pub fn split_comment_line(s: &str, max_len: usize, indent: usize) -> String {
 
 pub fn match_built_in_type(type_name: &str, xsd_ns: &Option<Namespace>) -> Option<&'static str> {
     let (prefix, name) = split_name(type_name);
-    let xsd_prefix = xsd_ns.as_ref().and_then(|ns| ns.name());
-    if xsd_prefix != prefix {
-        return None;
-    }
+    // let xsd_prefix = xsd_ns.as_ref().and_then(|ns| ns.name());
+    // if xsd_prefix != prefix {
+    //     return None;
+    // }
     let res = match name {
         "hexBinary" => "String",
         "base64Binary" => "String",
@@ -61,8 +61,8 @@ pub fn match_built_in_type(type_name: &str, xsd_ns: &Option<Namespace>) -> Optio
         "gDay" => "xs::GDay",
         "gMonth" => "xs::GMonth",
         "gMonthDay" => "xs::GMonthDay",
-        "gYear" => "u32",
-        "gYearMonth" => "xs::GYearMonth",
+        "gYear" => "String",
+        "gYearMonth" => "String",
 
         "string" => "String",
         "normalizedString" => "String",

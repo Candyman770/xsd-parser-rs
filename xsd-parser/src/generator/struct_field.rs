@@ -12,7 +12,7 @@ pub trait StructFieldGenerator {
             return "".into();
         }
         format!(
-            "{comment}{macros}{indent}pub {name}: {typename},",
+            "{comment}{macros}{indent}#[validate(nested)]\n{indent}pub {name}: {typename},",
             comment = self.format_comment(entity, gen),
             macros = self.macros(entity, gen),
             indent = gen.base().indent(),
@@ -51,6 +51,7 @@ pub trait StructFieldGenerator {
                 indent.as_str(),
                 &entity.type_modifiers,
             ),
+            StructFieldSource::Base => format!("{indent}#[serde(rename = \"$text\")]\n"),
             _ => "".into(),
         }
     }

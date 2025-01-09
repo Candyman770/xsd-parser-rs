@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use crate::{
     generator::{
-        validator::{gen_facet_validation, gen_validate_impl},
+        validator::{gen_facet_validation, gen_validate_impl, gen_validation_functions, gen_validation_macro},
         Generator,
     },
     parser::types::TupleStruct,
@@ -10,13 +10,23 @@ use crate::{
 
 pub trait TupleStructGenerator {
     fn generate(&self, entity: &TupleStruct, gen: &Generator) -> String {
+        let name = self.get_name(entity, gen);
+        let indent = gen.base().indent();
+        let facet_types = entity.facets.iter().map(|f| &f.facet_type).collect();
         format!(
-            "{comment}{macros}pub struct {name} (pub {typename});\n{subtypes}\n",
-            comment = self.format_comment(entity, gen),
-            name = self.get_name(entity, gen),
+            "{macros}\
+            pub struct {name} {{\n\
+                {indent}#[serde(rename = \"$text\")]\n\
+                {validate_macro}\
+                {indent}pub inner: {typename}\n\
+            }}\n\n{validation_functions}\n\n",
+            // comment = self.format_comment(entity, gen),
+            // name = self.get_name(entity, gen),
             macros = self.macros(entity, gen),
             typename = self.get_type_name(entity, gen),
-            subtypes = self.subtypes(entity, gen),
+            // subtypes = self.subtypes(entity, gen),
+            validate_macro = gen_validation_macro(&facet_types, &name, &indent),
+            validation_functions = gen_validation_functions(&facet_types, &name),
             // validation = self.validation(entity, gen),
         )
     }
@@ -39,7 +49,7 @@ pub trait TupleStructGenerator {
     }
 
     fn macros(&self, _entity: &TupleStruct, _gen: &Generator) -> Cow<'static, str> {
-        "#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize)]\n".into()
+        "#[derive(Default, Clone, PartialEq, Debug, Serialize, Deserialize, Validate)]\n".into()
     }
 
     fn format_comment(&self, entity: &TupleStruct, gen: &Generator) -> String {

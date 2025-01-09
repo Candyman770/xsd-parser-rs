@@ -1,6 +1,8 @@
 use std::borrow::Cow;
 
-use crate::parser::xsd_elements::FacetType;
+use crate::parser::{types::{Enum, EnumCase, Facet}, xsd_elements::FacetType};
+use crate::generator::Generator;
+use inflector::cases::{pascalcase::to_pascal_case, snakecase::to_snake_case};
 
 pub trait Validate {
     fn validate(&self) -> Result<(), String> {
@@ -47,6 +49,150 @@ pub fn gen_facet_validation(facet: &FacetType, name: &str, typename: &str) -> Co
         }
         FacetType::MinLength(value) => gen_min_length_validation(value.as_str(), name).into(),
         _ => "".into(), // TODO: All Facet Types
+    }
+}
+
+pub fn gen_validation_functions(facets: &Vec<&FacetType>, name: &str) -> String {
+    let mut res = vec![];
+    let mut frac_digit = None;
+    let mut tot_digit = None;
+    for facet in facets {
+        match facet {
+            FacetType::FractionDigits(val) => { frac_digit = Some(val) },
+            FacetType::TotalDigits(val) => { tot_digit = Some(val) },
+            FacetType::Pattern(val) => { res.push(gen_regex_validation(val, name)) },
+            _ => {}
+        }
+    }
+    match (frac_digit, tot_digit) {
+        (Some(f_val), Some(t_val)) => { res.push(gen_digits_validation(f_val, t_val, name)); },
+        _ => {},
+    }
+    res.join("\n\n")
+}
+
+pub fn gen_validation_macro(facets: &Vec<&FacetType>, name: &str, indent: &str) -> String {
+    let mut length_vec = vec![];
+    let mut range_vec = vec![];
+    let mut regex_vec = vec![];
+    let mut custom_vec = vec![];
+    for facet in facets {
+        gen_length_validation_macro(&facet, &mut length_vec);
+        gen_range_validation_macro(&facet, &mut range_vec);
+        gen_custom_validation_macro(&facet, name, &mut custom_vec);
+        gen_regex_validation_macro(&facet, name, &mut regex_vec);
+    }
+    let length_str = if length_vec.is_empty() { None } else { Some(format!("length({})", length_vec.join(", "))) };
+    let range_str = if range_vec.is_empty() { None } else { Some(format!("range({})", range_vec.join(", "))) };
+    let regex_str = if regex_vec.is_empty() { None } else { Some(format!("regex({})", regex_vec.join(", "))) };
+    let custom_str = if custom_vec.is_empty() { None } else { Some(format!("custom({})", custom_vec.join(", "))) };
+    let res: Vec<String> = vec![length_str, range_str, regex_str, custom_str].into_iter().filter_map(|s| s).collect();
+    if res.is_empty() { String::new() } else {
+        format!("{indent}#[validate({str})]\n", str = res.join(", "))
+    }
+}
+
+pub fn gen_length_validation_macro(facet: &FacetType, list: &mut Vec<String>) {
+    match facet {
+        FacetType::Length(val) => { list.push(format!("equal = {val}")); },
+        FacetType::MaxLength(val) => { list.push(format!("max = {val}")); },
+        FacetType::MinLength(val) => { list.push(format!("min = {val}")); },
+        _ => {},
+    }
+}
+
+pub fn gen_range_validation_macro(facet: &FacetType, list: &mut Vec<String>) {
+    match facet {
+        FacetType::MaxExclusive(val) => { list.push(format!("exclusive_max = {val}")); },
+        FacetType::MinExclusive(val) => { list.push(format!("exclusive_min = {val}")); },
+        FacetType::MaxInclusive(val) => { list.push(format!("max = {val}")); },
+        FacetType::MinInclusive(val) => { list.push(format!("min = {val}")); },
+        _ => {}
+    }
+}
+
+pub fn gen_custom_validation_macro(facet: &FacetType, name: &str, list: &mut Vec<String>) {
+    let name = to_snake_case(name);
+    match facet {
+        FacetType::FractionDigits(_) => { list.push(format!("function = {name}_digits_validator")); },
+        // FacetType::TotalDigits(_) => { list.push(format!("function = {name}_total_digits_validator")); },
+        _ => {}
+    }
+}
+
+pub fn gen_regex_validation_macro(facet: &FacetType, name: &str, list: &mut Vec<String>) {
+    let name = to_snake_case(name);
+    match facet {
+        FacetType::Pattern(_) => { list.push(format!("path = *{regex_name}", regex_name = format!("{name}_regex").to_ascii_uppercase())); },
+        _ => {}
+    }
+}
+
+pub fn gen_digits_validation(frac_value: &str, total_value: &str, name: &str) -> String {
+    let name = to_snake_case(name);
+    format!(
+        r#"
+fn {name}_digits_validator(num: &BigDecimal) -> Result<(), ValidationError> {{
+    if num.fractional_digit_count() > {frac_value} {{
+        let mut err = ValidationError::new("fractional_digits");
+        err.add_param("max".into(), &{frac_value});
+        err.add_param("value".into(), &num);
+        return Err(err);
+    }}
+    if num.digits() > {total_value} {{
+        let mut err = ValidationError::new("total_digits");
+        err.add_param("max".into(), &{total_value});
+        err.add_param("value".into(), &num);
+        return Err(err);
+    }}
+    Ok(())
+}}
+        "#,
+    )
+}
+
+pub fn gen_regex_validation(value: &str, name: &str) -> String {
+    let name = to_snake_case(name);
+    format!(
+        r#"
+static {regex_name}: Lazy<Regex> = Lazy::new(|| {{
+    Regex::new(r"{value}").unwrap()
+}});
+        "#,
+        regex_name = format!("{name}_regex").to_ascii_uppercase()
+    )
+}
+
+pub fn gen_enum_validation(entity: &Enum, name: &str, gen: &Generator) -> String {
+    let indent = gen.base().indent();
+    let cases: String = entity.cases.iter().map(|c| gen_enum_case_validation(c)).filter_map(|s| s).collect::<Vec<String>>().join(&format!("\n{indent}{indent}{indent}"));
+    let default_case = if cases.is_empty() { "_ => {}," } else { "" };
+    format!(
+        r#"
+impl Validate for {name} {{
+    fn validate(&self) -> Result<(), ValidationErrors> {{
+        let mut err = ValidationErrors::new();
+        match self {{
+            {cases}
+            Self::__Unknown__(val) => {{
+                let mut field_err = ValidationError::new("unknown_enum");
+                field_err.add_param("value".into(), &val);
+                err.add("unknown", field_err);
+            }},
+            {default_case}
+        }}
+        if err.is_empty() {{ Ok(()) }} else {{ Err(err) }}
+    }}
+}}
+        "#,
+    )
+}
+
+fn gen_enum_case_validation(entity: &EnumCase) -> Option<String> {
+    let name = to_pascal_case(&entity.name);
+    match entity.type_name {
+        Some(_) => Some(format!("Self::{name}(val) => {{ err.merge_self(\"{name}\", val.validate()); }},")),
+        None => None
     }
 }
 

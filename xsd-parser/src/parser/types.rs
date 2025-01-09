@@ -37,7 +37,6 @@ impl Struct {
 
     pub fn extend_base(&self, types: &HashMap<&String, &Self>) {
         self.fields.borrow_mut().iter_mut().for_each(|f| f.extend_base(types));
-
         let mut fields = self
             .fields
             .borrow()
@@ -53,15 +52,15 @@ impl Struct {
             })
             .collect::<Vec<StructField>>();
 
+        // self.fields.borrow_mut().retain(|field| field.name.as_str() != tag::BASE);
         self.fields.borrow_mut().append(&mut fields);
-
-        self.fields.borrow_mut().retain(|field| field.name.as_str() != tag::BASE);
 
         for subtype in &self.subtypes {
             if let RsEntity::Struct(s) = subtype {
                 s.extend_base(types);
             }
         }
+
     }
 
     pub fn extend_attribute_group(&self, types: &HashMap<&String, &Self>) {
